@@ -1,0 +1,78 @@
+# Assistive Vision System - V1 Configuration
+# ==========================================
+
+camera:
+  device_id: 0          # Webcam device index
+  width: 640            # Capture width
+  height: 480           # Capture height
+  fps: 30               # Target FPS
+
+face_detection:
+  enabled: true         # Set to false to use placeholder (no detection)
+  model_path: "models/yolov8n-face.pt"
+  confidence_threshold: 0.5
+  device: "cuda"        # "cuda" or "cpu"
+  img_size: 640         # Inference resolution
+
+face_tracking:
+  enabled: true         # Set to false to use placeholder (no tracking)
+  track_high_thresh: 0.5
+  track_low_thresh: 0.1
+  new_track_thresh: 0.6
+  track_buffer: 30      # Frames to keep lost tracks
+  with_reid: false      # ReID requires a model (V2)
+  use_cmc: false        # Camera motion correction
+  frame_rate: 30        # Frame rate for tracker
+
+face_landmarks:
+  enabled: true         # Set to false to use placeholder (no landmarks)
+  model_path: "models/face_landmarker.task"
+  num_faces: 5
+  min_face_detection_confidence: 0.5
+  min_face_presence_confidence: 0.5
+  min_tracking_confidence: 0.5
+
+temporal_buffer:
+  max_length: 30        # Max observations per track (~1 second at 30fps)
+  stale_frames: 15      # Remove track after N frames without detection
+
+speaking_detection:
+  enabled: true         # Set to false to use placeholder
+  # MAR temporal analysis thresholds
+  mar_speaking_threshold: 0.3   # MAR value above which mouth is "open"
+  mar_baseline_frames: 10       # Frames to establish baseline
+  variation_threshold: 0.05     # Min MAR std-dev to consider "active"
+  min_transitions: 2            # Min open/close transitions for speaking
+  speak_confirm_frames: 5       # Consecutive active frames → SPEAKING
+  silent_confirm_frames: 8      # Consecutive inactive frames → SILENT
+  analysis_window: 15           # Recent frames to analyze
+
+speaker_localization:
+  enabled: true                 # Set to false to disable bearing estimation
+  focal_length_pixels: 0        # 0 = auto-estimate from FOV below
+  horizontal_fov_degrees: 60.0  # Typical laptop webcam HFOV
+  center_deadband_degrees: 5.0  # Angles within this → CENTER
+
+speaker_motion:
+  enabled: true                 # Set to false to disable motion estimation
+  history_length: 5             # Angular velocity samples for median smoothing
+  stationary_threshold_degrees_per_second: 5.0  # Below this → STATIONARY
+
+alignment:
+  enabled: true                 # Set to false to disable alignment control
+  aligned_enter_threshold_degrees: 5.0   # Enter ALIGNED when |bearing| <= this
+  aligned_exit_threshold_degrees: 8.0    # Leave ALIGNED when |bearing| >= this
+  bearing_history_length: 5             # Median filter window for bearing
+  turn_confirm_frames: 3                # Frames to confirm turn command
+  aligned_confirm_frames: 3             # Frames to confirm aligned state
+
+display:
+  window_name: "Assistive Vision - Debug"
+  show_bounding_boxes: true
+  show_track_ids: true
+  show_speaking_status: true
+  show_confidence: true
+  speaking_color: [0, 255, 0]     # Green for speaking
+  silent_color: [0, 0, 255]       # Red for silent
+  text_scale: 0.6
+  text_thickness: 2

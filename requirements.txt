@@ -1,0 +1,18 @@
+# Core
+numpy>=2.0
+opencv-python>=5.0
+pyyaml>=6.0
+
+# ML / GPU
+torch>=2.11
+torchvision>=0.16
+ultralytics>=8.0       # YOLOv8-face
+
+# Face tracking
+boxmot>=23.0             # BotSORT/DeepSORT tracking
+
+# Facial landmarks
+mediapipe>=1.0           # Face Landmarker
+
+# Optional acceleration
+# onnxruntime-gpu>=1.16  # ONNX inference
