@@ -76,3 +76,10 @@ display:
   silent_color: [0, 0, 255]       # Red for silent
   text_scale: 0.6
   text_thickness: 2
+
+scene_awareness:
+  enabled: true                 # Set true to enable SmolVLM captions
+  model_id: "HuggingFaceTB/SmolVLM2-256M-Video-Instruct"
+  period_seconds: 4.5           # One caption attempt every N seconds
+  max_new_tokens: 60
+  image_size: 512               # Downscale longest edge to this

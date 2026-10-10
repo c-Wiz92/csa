@@ -271,3 +271,6 @@ class FrameResult:
     active_speaker_bearing: Optional[SpeakerBearing] = None
     active_speaker_motion: Optional[SpeakerMotion] = None
     active_speaker_alignment: Optional[AlignmentResult] = None
+    # Independent scene-awareness caption (SmolVLM slow path, may be None).
+    scene_caption: Optional[str] = None
+    scene_caption_age_s: Optional[float] = None

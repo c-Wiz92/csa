@@ -36,6 +36,8 @@ class Visualizer:
         active_speaker_bearing: Optional[SpeakerBearing] = None,
         active_speaker_motion: Optional[SpeakerMotion] = None,
         active_speaker_alignment: Optional[AlignmentResult] = None,
+        scene_caption: Optional[str] = None,
+        scene_caption_age_s: Optional[float] = None,
     ) -> np.ndarray:
         """Draw all tracked face information on the frame.
 
@@ -257,6 +259,28 @@ class Visualizer:
                 (100, 100, 100),
                 2,
             )
+
+        # Independent scene-awareness caption (works with or without speaker).
+        if scene_caption:
+            import textwrap
+
+            age_txt = (
+                f" (~{int(scene_caption_age_s)}s ago)"
+                if scene_caption_age_s is not None
+                else ""
+            )
+            lines = textwrap.wrap(f"SCENE: {scene_caption}{age_txt}", width=60)
+            y0 = h - 10 - 22 * (len(lines) - 1)
+            for i, line in enumerate(lines):
+                cv2.putText(
+                    overlay,
+                    line,
+                    (10, y0 + i * 22),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.6,
+                    (255, 255, 0),
+                    2,
+                )
 
         return overlay
 

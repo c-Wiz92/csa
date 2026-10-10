@@ -87,6 +87,13 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "text_scale": 0.6,
         "text_thickness": 2,
     },
+    "scene_awareness": {
+        "enabled": False,
+        "model_id": "HuggingFaceTB/SmolVLM2-256M-Video-Instruct",
+        "period_seconds": 4.5,
+        "max_new_tokens": 60,
+        "image_size": 512,
+    },
 }
 
 

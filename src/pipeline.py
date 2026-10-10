@@ -26,6 +26,7 @@ from src.speaking_detection import SpeakingDetector, MARSpeakingDetector, Placeh
 from src.speaker_localization import SpeakerLocalizer, CameraBearingEstimator, select_active_speaker
 from src.speaker_motion import SpeakerMotionEstimator, BearingMotionEstimator
 from src.alignment_controller import AlignmentController, BearingAlignmentController
+from src.scene_awareness import SmolVLMSceneDescriber
 from src.visualization import Visualizer
 
 
@@ -112,6 +113,17 @@ class Pipeline:
         disp_config = config.get("display", {})
         self.visualizer = Visualizer(disp_config)
 
+        # Scene awareness (independent slow path, async, never blocks).
+        # Disabled by default-safe: only runs if config enables it.
+        scene_config = config.get("scene_awareness", {})
+        if scene_config.get("enabled", False):
+            self.scene_describer: Optional[SmolVLMSceneDescriber] = (
+                SmolVLMSceneDescriber(scene_config)
+            )
+            self.scene_describer.start()
+        else:
+            self.scene_describer = None
+
         # State
         self._running = False
         self._fps = 0.0
@@ -185,6 +197,20 @@ class Pipeline:
                 active_speaker_bearing, active_speaker_motion
             )
 
+        # 9. Scene awareness: offer frame copy to background worker.
+        # Independent path — never reads speaking state, never blocks.
+        scene_caption = None
+        scene_age_s = None
+        if self.scene_describer is not None:
+            try:
+                self.scene_describer.submit(frame)
+                cap = self.scene_describer.get_cached()
+                if cap is not None:
+                    scene_caption = cap.text
+                    scene_age_s = time.time() - cap.timestamp
+            except Exception:
+                pass
+
         elapsed = time.perf_counter() - start_time
         self._update_fps(elapsed)
 
@@ -198,6 +224,8 @@ class Pipeline:
             active_speaker_bearing=active_speaker_bearing,
             active_speaker_motion=active_speaker_motion,
             active_speaker_alignment=active_speaker_alignment,
+            scene_caption=scene_caption,
+            scene_caption_age_s=scene_age_s,
         )
 
     def run(self):
@@ -253,6 +281,8 @@ class Pipeline:
                     active_speaker_bearing=result.active_speaker_bearing,
                     active_speaker_motion=result.active_speaker_motion,
                     active_speaker_alignment=result.active_speaker_alignment,
+                    scene_caption=result.scene_caption,
+                    scene_caption_age_s=result.scene_caption_age_s,
                 )
                 self.visualizer.show(annotated)
 
@@ -268,6 +298,11 @@ class Pipeline:
     def stop(self):
         """Stop the pipeline and release resources."""
         self._running = False
+        if getattr(self, "scene_describer", None) is not None:
+            try:
+                self.scene_describer.stop()
+            except Exception:
+                pass
         self.capture.release()
         self.visualizer.cleanup()
         print("Pipeline stopped.")

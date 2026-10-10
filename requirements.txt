@@ -14,5 +14,11 @@ boxmot>=23.0             # BotSORT/DeepSORT tracking
 # Facial landmarks
 mediapipe>=1.0           # Face Landmarker
 
+# Scene awareness (SmolVLM captions, async slow path)
+transformers>=4.50       # SmolVLM processor + model
+accelerate>=0.30         # device_map support
+num2words>=0.5           # required by SmolVLM processor
+pillow>=10.0             # image handling for VLM input
+
 # Optional acceleration
 # onnxruntime-gpu>=1.16  # ONNX inference
